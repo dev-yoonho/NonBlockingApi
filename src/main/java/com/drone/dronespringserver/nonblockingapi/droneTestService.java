@@ -1,22 +1,45 @@
 package com.drone.dronespringserver.nonblockingapi;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.scheduling.annotation.Async;
 import java.util.concurrent.CompletableFuture;
 import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
 
 @Service
-public class droneTestService {
+public class DroneTestService {
+
+    private static final Logger logger = LoggerFactory.getLogger(DroneTestService.class);
+
     @Async
     public CompletableFuture<String> processDroneRequestAsync(String data) throws InterruptedException {
-        // 비동기 작업 처리
+        long startTime = System.currentTimeMillis();
+        logger.info("Processing async request for data: {}", data);
+
+        // 2초간의 처리 지연
         Thread.sleep(2000);
-        return CompletableFuture.completedFuture("Processed: " + data);
+        String result = "Processed: " + data;
+
+        long endTime = System.currentTimeMillis();
+        logger.info("Completed async processing for data: {}, Time taken: {} ms", data, (endTime - startTime));
+
+        return CompletableFuture.completedFuture(result);
     }
 
     public Flux<String> streamDroneData() {
-        // WebFlux Flux를 이용한 스트림 데이터 처리
-        return Flux.just("Data1", "Data2", "Data3");
+        logger.info("Starting to stream drone data...");
+        long startTime = System.currentTimeMillis();
+
+        return Flux.range(1, 10000)
+                .map(i -> {
+                    String chunk = "DroneDataChunk_" + i;
+                    logger.info("Streaming data chunk: {}", chunk);
+                    return chunk;
+                })
+                .doOnComplete(() -> {
+                    long endTime = System.currentTimeMillis();
+                    logger.info("Completed streaming data. Time taken: {} ms", (endTime - startTime));
+                });
     }
 }
